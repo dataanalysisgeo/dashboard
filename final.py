@@ -173,7 +173,25 @@ with tab1:
 
         if not filtered_landuse_gdf.empty and 'lat' in filtered_landuse_gdf.columns and 'lon' in filtered_landuse_gdf.columns:
             heat_data_landuse = filtered_landuse_gdf[['lat', 'lon']].values.tolist()
-            HeatMap(heat_data_landuse, radius=15, blur=10, gradient={0.2: 'blue', 0.4: 'lime', 0.6: 'orange', 1: 'red'}).add_to(m1)
+            HeatMap(heat_data_landuse, radius=15, blur=10, gradient={0: 'blue', 1: 'red'}).add_to(m1)
+
+        # Custom legend for Land Use Heatmap
+        legend_html_landuse =   """
+                                <div style="
+                                position: fixed;
+                                bottom: 30px; left: 20; width: 150px; height: 120px;
+                                border:2px solid grey; z-index:9999; font-size:14px;
+                                background-color:grey;
+                                opacity:0.9;
+                                ">
+                                  <div style="padding: 10px;">
+                                    <p><b>Land Use Density</b></p>
+                                    <p><i style="background:blue; opacity: 0.7; width: 20px; height: 10px; display: inline-block;"></i> Low Density</p>
+                                    <p><i style="background:red; opacity: 0.7; width: 20px; height: 10px; display: inline-block;"></i> High Density</p>
+                                  </div>
+                                </div>
+                                """
+        m1.get_root().html.add_child(folium.Element(legend_html_landuse))
 
         st_folium(m1, use_container_width=True, key="map1", height=400)
 
@@ -191,7 +209,25 @@ with tab1:
 
             if not filtered_building_gdf.empty and 'lat' in filtered_building_gdf.columns and 'lon' in filtered_building_gdf.columns:
                 heat_data_building = filtered_building_gdf[['lat', 'lon']].values.tolist()
-                HeatMap(heat_data_building, radius=15, blur=10, gradient={0.2: 'purple', 0.4: 'blue', 0.6: 'green', 1: 'yellow'}).add_to(m2)
+                HeatMap(heat_data_building, radius=15, blur=10, gradient={0: 'purple', 1: 'yellow'}).add_to(m2)
+
+            # Custom legend for Building Heatmap
+            legend_html_building =   """
+                                    <div style="
+                                    position: fixed;
+                                    bottom: 30px; left: 20; width: 150px; height: 120px;
+                                    border:2px solid grey; z-index:9999; font-size:14px;
+                                    background-color:grey;
+                                    opacity:0.9;
+                                    ">
+                                      <div style="padding: 10px;">
+                                        <p><b>Building Density</b></p>
+                                        <p><i style="background:purple; opacity: 0.7; width: 20px; height: 10px; display: inline-block;"></i> Low Density</p>
+                                        <p><i style="background:yellow; opacity: 0.7; width: 20px; height: 10px; display: inline-block;"></i> High Density</p>
+                                      </div>
+                                    </div>
+                                    """
+            m2.get_root().html.add_child(folium.Element(legend_html_building))
 
             st_folium(m2, use_container_width=True, key="map2", height=400)
         else:
@@ -251,38 +287,39 @@ with tab3:
     with col3:
         st.subheader("Land Use Type Distribution")
 
-        landuse_counts = lulc_gdf['landuseclassification'].value_counts()
+        landuse_counts = lulc_gdf['landuseclassification'].value_counts().sort_values(ascending=True)
 
-        fig_pie_landuse = px.pie(
-            values=landuse_counts.values, 
-            names=landuse_counts.index,
-            title="Distribution of Land Use Categories"
+        fig_bar_landuse = px.bar(
+            x=landuse_counts.values, 
+            y=landuse_counts.index,
+            orientation='h',
+            title="Distribution of Land Use Categories",
+            labels={'x': 'Count', 'y': 'Land Use Type'}
         )
-        fig_pie_landuse.update_traces(textposition='inside', textinfo='percent+label')
-        fig_pie_landuse.update_layout(
+        fig_bar_landuse.update_layout(
             font=dict(size=12),
-            showlegend=True,
+            showlegend=False,
             height=500
         )
         
-        st.plotly_chart(fig_pie_landuse, use_container_width=True)
+        st.plotly_chart(fig_bar_landuse, use_container_width=True)
 
     with col4:
         st.subheader("Detailed Statistics (Land Use)")
         
-        fig_bar_landuse = px.bar(
+        fig_bar_landuse_detailed = px.bar(
             x=landuse_counts.index,
             y=landuse_counts.values,
             title="Number of Areas by Land Use Type",
             labels={'x': 'Land Use Type', 'y': 'Count'}
         )
-        fig_bar_landuse.update_layout(
+        fig_bar_landuse_detailed.update_layout(
             xaxis_tickangle=-45,
             height=500,
             font=dict(size=10)
         )
         
-        st.plotly_chart(fig_bar_landuse, use_container_width=True)
+        st.plotly_chart(fig_bar_landuse_detailed, use_container_width=True)
 
     if buildings_gdf is not None:
         st.markdown("---")
