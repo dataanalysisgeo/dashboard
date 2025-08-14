@@ -287,26 +287,26 @@ with tab3:
     with col3:
         st.subheader("Land Use Type Distribution")
 
-        landuse_counts = lulc_gdf['landuseclassification'].value_counts().sort_values(ascending=True)
+        landuse_counts = lulc_gdf['landuseclassification'].value_counts()
 
-        fig_bar_landuse = px.bar(
-            x=landuse_counts.values, 
-            y=landuse_counts.index,
-            orientation='h',
-            title="Distribution of Land Use Categories",
-            labels={'x': 'Count', 'y': 'Land Use Type'}
+        fig_landuse_pie = px.pie(
+            values=landuse_counts.values,
+            names=landuse_counts.index,
+            title="Distribution of Land Use Categories"
         )
-        fig_bar_landuse.update_layout(
+        fig_landuse_pie.update_traces(textposition='inside', textinfo='percent+label')
+        fig_landuse_pie.update_layout(
             font=dict(size=12),
-            showlegend=False,
-            height=500
+            height=500,
+            showlegend=False
         )
         
-        st.plotly_chart(fig_bar_landuse, use_container_width=True)
+        st.plotly_chart(fig_landuse_pie, use_container_width=True)
 
     with col4:
         st.subheader("Detailed Statistics (Land Use)")
         
+        landuse_counts = lulc_gdf['landuseclassification'].value_counts()
         fig_bar_landuse_detailed = px.bar(
             x=landuse_counts.index,
             y=landuse_counts.values,
@@ -328,15 +328,19 @@ with tab3:
         col_b1, col_b2 = st.columns(2)
         
         with col_b1:
-            building_type_counts = buildings_gdf['mainfacilitytype'].value_counts()
-            fig_building_pie = px.pie(
-                values=building_type_counts.values,
-                names=building_type_counts.index,
-                title="Distribution of Main Facility Types"
+            fig_building_hist = px.histogram(
+                buildings_gdf,
+                x='mainfacilitytype',
+                title="Distribution of Main Facility Types",
+                labels={'mainfacilitytype': 'Main Facility Type', 'count': 'Count'}
             )
-            fig_building_pie.update_traces(textposition='inside', textinfo='percent+label')
-            st.plotly_chart(fig_building_pie, use_container_width=True)
-        
+            fig_building_hist.update_layout(
+                xaxis_tickangle=-45,
+                height=500,
+                font=dict(size=10)
+            )
+            st.plotly_chart(fig_building_hist, use_container_width=True)
+
         with col_b2:
             construction_status_counts = buildings_gdf['constructionstatus'].value_counts()
             fig_building_bar = px.bar(
